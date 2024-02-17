@@ -1,0 +1,25 @@
+{% extends "layout.html" %} {% block content %}{% include "includes/nav.html" %}
+<div class="px-5 py-8 relative w-full h-screen flex flex-col items-center" id="main">
+    <div class="flex flex-col justify-center items-center gap-5">
+    <img src="{{ url_for('static',filename='images/veg_img.png')}}" class="w-7/12" />
+    <h4 class="text-5xl md:text-5xl w-full font-bold text-center">
+        Welcome to VeggieLens!
+      </h4>
+      <div class="flex gap-6 mt-4">
+        <a
+          class="mt-2 py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-md transition duration-200"
+          href="/predict"
+          >Make a Prediction</a>
+        <a
+          class="mt-2 py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-md transition duration-200"
+          href="/quiz"
+          >Take the Quiz</a>
+      </div>
+    </div>
+</div>
+<style>
+  body {
+    overflow: hidden;
+  }
+</style>
+{% include "includes/footer.html" %}{% endblock %}

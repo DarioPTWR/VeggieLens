@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VeggieLens | One-Stop Veggie Prediction Website</title>
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static',filename='images/VeggieLens_Logo.png')}}"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static',filename='css/main.css')}}"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
+  </head>
+
+  <body class="base-bg w-screen h-screen overflow-x-hidden">
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>

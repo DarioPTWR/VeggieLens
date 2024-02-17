@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block content %}
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/login.css')}}" />
+
+  <div class="w-screen h-screen flex items-center justify-center">
+    <div class="glass w-4/5 flex flex-col justify-between items-center max-w-sm px-3 py-2">
+      <div class="flex flex-col gap-2 justify-center items-center mb-7">
+        <div class="flex flex-col items-center justify-center">
+          <img src="{{ url_for('static',filename='images/VeggieLens_Logo.png')}}" class="w-2/6 md:w-2/6" />
+          <h2 class="text-lg font-bold text-center w-1/2">Welcome Back!</h2>
+        </div>
+        <h3 class="text-lg font-bold mr-auto">Login</h3>
+      </div>
+
+      <form method="POST" action="/login" class="flex flex-col items-center gap-5 w-full h-full mt-3">
+        <div class="field mb-2">
+          <div class="control">
+            <input type="email" id="email" name="email" required />
+            <label>Email</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="control">
+            <input type="password" id="password" name="password" required />
+            <label>Password</label>
+          </div>
+        </div>
+
+        <div class="flex flex-col justify-center items-stretch w-full gap-2">
+          <div class="text-red-600 text-xs font-bold text-center">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div>{{ messages[0] }}</div>
+              {% else %}
+                <div>&nbsp;</div>
+              {% endif %}
+            {% endwith %}
+          </div>
+          <button class="button mb-auto text-white buttonColor w-full mx-auto rounded-md p-2 text-center focus:outline-blue-500 focus:outline-2 focus:outline text-md">
+            LOGIN
+          </button>
+        </div>
+
+        <div class="mt-auto pb-3">
+          <p class="text-sm text-center">
+            Need an account?
+            <a href="/signup" class="underline underline-offset-2 text-gray-400 hover:text-gray-800" id="link">SIGN UP</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

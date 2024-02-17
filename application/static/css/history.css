@@ -1,0 +1,33 @@
+.sorted-asc::after {
+    content: "⯆";
+    transform: rotate(180deg);
+    display: inline-block;
+    font-size: 1rem;
+}
+  
+.sorted-desc::after {
+    content: "⯆";
+    display: inline-block;
+    transform: rotate(360deg);
+    font-size: 1rem;
+}
+  
+.table td,
+.table th {
+    text-align: center;
+    vertical-align: middle !important;
+}
+  
+.sortable::after {
+    transition: transform ease-in-out 300ms;
+}
+  
+.search {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.search input[type="text"] {
+    border: 2px solid #ddd; /* Light grey border */
+}

@@ -1,0 +1,301 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  {% include "includes/nav.html" %}
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/predict.css')}}" />
+
+  <div class="px-5 py-8 relative w-full mx-auto flex justify-center gap-4 xl:gap-12 items-stretch xl:flex-row flex-col" id="main">
+    <div class="flex flex-col order-1 xl:max-w-[250px] xl:w-[250px] gap-5 xl:self-center" id="AI">
+      <select id="AISelect">
+        <option selected disabled value="">Select AI Model</option>
+        <option value="vgg31">VGG</option>
+        <option value="alexnet128">AlexNet</option>
+      </select>
+      <div id="AIInfo" class="w-full px-3 xl:min-h-[100px] flex flex-col gap-3">&nbsp;</div>
+    </div>
+
+    <div class="grow py-3 px-2 xl:w-[450px] max-w-[450px] order-3 xl:order-2 xl:mt-12 mx-auto xl:mx-0" id="mainContent"></div>
+  </div>
+
+{% include "includes/footer.html" %}
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  renderMain();
+
+  var remainingHeight =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--vh")
+      .replace("px", "") * 100;
+  if (window.innerWidth >= 1280) {
+    document.getElementById("main").style.height =
+      remainingHeight -
+      document.getElementsByTagName("nav")[0].clientHeight -
+      document.getElementsByTagName("footer")[0].clientHeight +
+      "px";
+  } 
+
+  function openCity(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove("active");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.classList.add("active");
+  }
+
+  function readURL(input) {
+    if (input.files && input.files[0]) {
+      if (!allowedTypes.includes(input.files[0].type)) {
+        alert("Invalid file type. Please upload images only!")
+        window.location.reload()
+        return 
+      }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        console.log(e.target.result);
+        selectImage(e.target.result, input.files[0].name);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function renderMain() {
+    document.getElementById("mainContent").innerHTML = `
+    <div class="tab">
+      <button
+        class="tablinks"
+        onclick="openCity(event, 'chooseFile')"
+        id="defaultOpen"
+      >
+        Choose Files
+      </button>
+      <button class="tablinks" onclick="openCity(event, 'exampleImage')">
+        Sample Images
+      </button>
+    </div>
+    <div id="chooseFile" class="tabcontent border-2 border-zinc-300 h-[300px]">
+      <form
+        class="image-upload-wrap flex justify-center items-center w-full h-[300px] relative"
+      >
+        <input
+          class="file-upload-input absolute m-0 p-0 w-full h-full opacity-0 cursor-pointer box-border outline-0"
+          type="file"
+          onchange="readURL(this);"
+          accept="image/*"
+          id="imageFile"
+        />
+
+        <div
+          class="text-center w-full flex flex-col justify-center items-center gap-2"
+          style="z-index: 1000"
+        >
+          <div id="imageErr" class="text-danger hidden">Invalid Image</div>
+          <h3 class="text-3xl">Drag photo here</h3>
+          <p>— or —</p>
+          <button
+            class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200 text-center"
+            type="button"
+            style="white-space: nowrap;"
+            id="addImage"
+            onclick="document.querySelectorAll('.file-upload-input')[0].click()"
+          >
+            Choose photo to upload
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div
+      id="exampleImage"
+      class="tabcontent border-2 border-zinc-300 h-[300px]"
+    >
+      <div
+        class="grid grid-cols-4 gap-4 h-[300px] overflow-y-auto justify-center items-center p-2"
+        id="imageGrid"
+      >
+        {% for image in imageArr[:40] %}
+        <div onclick="selectImage('{{image}}','{{image}}')" class="imgContainer">
+          <img
+            class="w-full"
+            src="{{ url_for('static',filename='images/dataset_imgs/' + image) }}"
+            data-image="{{image}}"
+          />
+        </div>
+        {% endfor %}
+        <div class="col-span-4 flex pb-3 justify-center items-center" id="reloadBtnContainer">
+          <button
+            class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200 text-center"
+            onclick="loadMoreImages()"
+          > 
+            Load more images?
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    `;
+
+    document.getElementById("defaultOpen").click();
+  }
+
+  function loadMoreImages() {
+    var startIndex = document.getElementById("imageGrid").children.length - 1;
+    var endIndex = startIndex * 2;
+    var imageArr = JSON.parse(`{{imageArr | tojson}}`);
+    imageStr = "";
+    for (var image of [...imageArr].splice(startIndex, endIndex)) {
+      console.log(image);
+      var imageSrc = `/static/images/dataset_imgs/${image}`;
+      imageStr += `
+        <div onclick="selectImage('${image}','${image}')"  class="imgContainer">
+          <img
+            class="w-full"
+            src="${imageSrc}"
+            data-image="${image}"
+          />
+        </div>
+      `;
+    }
+    document
+      .getElementById("reloadBtnContainer")
+      .insertAdjacentHTML("beforebegin", imageStr);
+  }
+
+  const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+
+  function selectImage(imageSrc, imageName) {
+    if (
+      imageSrc.endsWith(".png") ||
+      imageSrc.endsWith(".jpg") ||
+      imageSrc.endsWith(".jpeg")
+    ) {
+      imageSrc = document.querySelector(`[data-image="${imageSrc}"]`).src;
+      fetch(imageSrc)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            console.log(reader.result);
+            return (document.getElementById("mainContent").innerHTML = `
+      <div class="flex flex-col items-center justify-center gap-5">
+          {% with messages =
+        get_flashed_messages(with_categories=true)%} {% if messages %} {% for
+        category, message in messages %}
+        <div class="alert alert-{{category}}">
+          <p>{{ message }}</p>
+        </div>
+        {% endfor %} {% endif %} {% endwith %} 
+        <button
+          class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200 text-center mr-auto"
+          type="button"
+          onclick="renderMain()"
+        >
+          < Return
+        </button>
+        <img src="${reader.result}" class="w-5/6 h-56 object-contain mx-auto" />
+        <button
+          class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200 text-center"
+          type="button"
+          id="predictButton"
+          onclick="predictImage('${reader.result}','${imageName}')"
+        >
+          Predict
+        </button>
+      </div>
+    `);
+          };
+          reader.readAsDataURL(blob);
+        });
+    }
+    return (document.getElementById("mainContent").innerHTML = `
+      <div class="flex flex-col items-center justify-center gap-5">
+        <button
+          class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200 text-center mr-auto"
+          type="button"
+          onclick="renderMain()"
+        >
+          < Return
+        </button>
+        <img src="${imageSrc}" class="w-5/6 h-56 object-contain mx-auto" />
+        <button
+          class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200 text-center"
+          type="button"
+          id="predictButton"
+          onclick="predictImage('${imageSrc}','${imageName}')"
+        >
+          Predict
+        </button>
+      </div>
+    `);
+  }
+
+var ai_description = JSON.parse(`{{ ai_description | tojson }}`);
+var dataset_description = JSON.parse(`{{ dataset_description | tojson }}`);
+
+document.getElementById("AISelect").addEventListener("change", () => {
+  const selectedModelValue = document.getElementById("AISelect").value;
+  const selectedModel = ai_description[selectedModelValue];
+ 
+  // Determine and set the image size and corresponding dataset key based on the selected AI model
+  if (selectedModelValue === 'vgg31') {
+    dataset_description = "31 x 31 px"; // Assuming this matches a key in dataset_description
+  } else if (selectedModelValue === 'alexnet128') {
+    dataset_description = "128 x 128 px"; // Assuming this matches a key in dataset_description
+  }
+
+  // Update AI model information display
+  let accuracyInfoHtml = `<p>${selectedModel.description}</p>
+      <p class="text-center"><b><u>Accuracy of Model</u></b></p>
+      <table class="w-full border-collapse table-auto">
+        <thead>
+          <tr>
+            <th></th>`;
+
+  // Dynamically adding table headers for the selected resolution
+  accuracyInfoHtml += `<th>${dataset_description}</th>`;
+  accuracyInfoHtml += `</tr></thead><tbody>`;
+
+  // Adding train and test rows for the selected resolution
+  ['train', 'test'].forEach(metric => {
+    accuracyInfoHtml += `<tr><th>${metric.charAt(0).toUpperCase() + metric.slice(1)}</th>`;
+    if (selectedModel[dataset_description]) {
+      accuracyInfoHtml += `<td>${selectedModel[dataset_description][metric]}%</td>`;
+    }
+    accuracyInfoHtml += `</tr>`;
+  });
+
+  accuracyInfoHtml += `</tbody></table>`;
+  document.getElementById("AIInfo").innerHTML = accuracyInfoHtml;
+
+});
+
+  function predictImage(imageSrc, imageName) {
+    if (!document.getElementById("AISelect").value) {
+      return alert("Error! Please select an AI model before proceeding with prediction!");
+    }
+    document.getElementById("predictButton").innerHTML = "Predicting";
+    document.getElementById("predictButton").disabled = true;
+    axios
+      .post(window.location.href, {
+        model: document.getElementById("AISelect").value,
+        dataset: dataset_description,
+        imageBlob: imageSrc,
+        imageName: imageName,
+        quiz: false,
+      })
+      .then((response) => {
+        window.location = response.data.redirect;
+        // console.log(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+</script>
+{% endblock %}

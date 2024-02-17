@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+{% include "includes/nav.html" %}
+
+<div class="w-full px-5 lg:w-2/3 mx-auto py-8">
+  <a class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200" href="/predict">&lt; Return to Predict</a>
+  
+  {% if result is not none %}
+  <div class="flex justify-center items-stretch gap-12 my-3 mx-auto">
+    <img src="{{result.filePath.replace('application/', '')}}" class="w-full aspect-square object-contain max-w-[100px]" onclick="openImage(this)" />
+    <div class="flex flex-col gap-3 justify-center items-center">
+      <h2 class="text-3xl">
+        Prediction: {{dataset_description[result.imageSize]["classLabels"][result.prediction]}}
+      </h2>
+      <h2 class="text-xl">Model: {{result.modelType}}</h2>
+      <h2 class="text-xl">Image Size: {{result.imageSize}}</h2>
+    </div>
+  </div>
+  {% endif %}
+  
+  <div id="history">{% include "includes/historyTable.html" %}</div>
+  <div id="quiz" class="mb-5 pb-5">{% include "includes/quizTable.html" %}</div>
+</div>
+
+{% include "includes/footer.html" %}
+{% if entries|length > 0 %}
+{% endif %}
+{% endblock %}

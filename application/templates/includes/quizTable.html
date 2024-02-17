@@ -1,0 +1,239 @@
+<div class="mt-5 pt-4 md:flex md:items-center md:justify-between">
+    <h3 class="text-lg font-bold">QUIZ HISTORY</h3>
+    <div class="flex flex-col md:flex-row gap-6 mt-4 md:mt-0">
+       <!-- Time Range Dropdown -->
+      <div class="flex flex-col md:flex-row py-2">
+        <label for="timeRange2" class="mr-3 mt-2">Time Range:</label>
+        <select id="timeRange2" class="bg-white border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 px-3 py-2">
+          <option value="all">All Time</option>
+          <option value="1h">Past Hour</option>
+          <option value="12h">Last 12 Hours</option>
+          <option value="24h">Last 24 Hours</option>
+          <option value="week">Last Week</option>
+          <option value="month">Last Month</option>
+        </select>
+      </div>
+      <!-- Search Bar -->
+      <div class="flex flex-col md:flex-row py-2 justify-center">
+        <label class="m-0 text-md mt-2" for="filter">Search:</label>
+        <input type="text" name="filter" value="" id="filter2" placeholder="Type to search..." class="py-2 px-5 mt-1 md:mt-0 md:ml-3" />
+      </div>
+    </div>
+  </div>
+
+<!-- Column Visibility Checkboxes -->
+<div class="flex flex-wrap gap-4 mb-3 mt-3 text-md">
+    <label class="flex items-center space-x-3">
+        <input type="checkbox" name="columns" value="quizDate" class="column-toggle2" checked>
+        <span>Quiz Date</span>
+    </label>
+    <label class="flex items-center space-x-3">
+        <input type="checkbox" name="columns" value="userScore" class="column-toggle2" checked>
+        <span>User Score</span>
+    </label>
+    <label class="flex items-center space-x-3">
+        <input type="checkbox" name="columns" value="aiScore" class="column-toggle2" checked>
+        <span>AI Score</span>
+    </label>
+    <label class="flex items-center space-x-3">
+        <input type="checkbox" name="columns" value="images" class="column-toggle2" checked>
+        <span>Images</span>
+    </label>
+    <label class="flex items-center space-x-3">
+        <input type="checkbox" name="columns" value="model2" class="column-toggle2" checked>
+        <span>Model</span>
+    </label>
+    <label class="flex items-center space-x-3">
+        <input type="checkbox" name="columns" value="imageSize2" class="column-toggle2" checked>
+        <span>Image Size</span>
+    </label>
+  </div>
+
+<div class="overflow-x-auto relative">
+    {% if quiz_entry|length > 0 %}
+    <table class="border-collapse w-full table-auto" id="quizTable">
+        <thead>
+            <tr>
+                <th class="whitespace-nowrap sorted-desc quizDate">Quiz Date</th>
+                <th class="whitespace-nowrap userScore">User Score</th>
+                <th class="whitespace-nowrap aiScore">AI Score</th>
+                <th class="whitespace-nowrap max-w-[90px] w-[90px] unsortable images">Images</th>
+                <th class="whitespace-nowrap model2">Model</th>
+                <th class="whitespace-nowrap imageSize2">Image Size</th>
+                <th class="unsortable">Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in quiz_entry %}
+            <tr class="even:bg-indigo-100 odd:bg-rose-200" data-quiz_on="{{ entry.quiz_on.isoformat()}}">
+                <td class="whitespace-nowrap quizDate">
+                    {{ entry.quiz_on.strftime("%d %b %y %H:%M:%S")}}
+                </td>
+                <td class="whitespace-nowrap userScore">{{entry.userScore}}%</td>
+                <td class="whitespace-nowrap aiScore">{{entry.aiScore}}%</td>
+                <td class="whitespace-nowrap images">
+                    <div class="flex flex-col justify-center">
+                        {% set imgList = entry.imgs.split(',') %}
+                        {% for img in imgList %}
+                        <img src="{{img.replace('application/', '')}}" class="cursor-pointer w-full mx-auto aspect-square object-contain" onclick="openImage(this)" />
+                        {% endfor %}
+                    </div>
+                </td>
+                <td class="whitespace-nowrap model2">{{ entry.modelType }}</td>
+                <td class="whitespace-nowrap imageSize2">{{ entry.imageSize }}</td>
+                <td class="whitespace-nowrap">
+                    <form action="/quiz/delete/{{entry.id}}" method="post">
+                        <input class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full text-sm" value="Delete" type="submit" />
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="flex flex-col justify-center items-center">
+        <h1 class="text-4xl py-5 text-center">No Past Quiz Found</h1>
+        <a class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white rounded-full transition duration-200" href="/quiz">Take Quiz</a>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script>
+    function openImage(imgElement) {
+        console.log(imgElement.src);
+        window.open(imgElement.src, "_blank");
+    }
+
+    // Combined function to apply both time range and search filters
+    function applyFilters() {
+            var selectedRange = $('#timeRange2').val();
+            var now = new Date(); // Current time
+            var searchText = $('#filter2').val().toLowerCase();
+
+            $("#quizTable tbody tr").each(function() {
+                var quizOn = new Date($(this).data('quiz_on'));
+                var timeDiff = now - quizOn; // Time difference in milliseconds
+                var matchesTimeRange = false;
+                
+                // Determine if the row matches the selected time range
+                switch(selectedRange) {
+                    case '1h':
+                        matchesTimeRange = timeDiff <= 1 * 60 * 60 * 1000;
+                        break;
+                    case '12h':
+                        matchesTimeRange = timeDiff <= 12 * 60 * 60 * 1000;
+                        break;
+                    case '24h':
+                        matchesTimeRange = timeDiff <= 24 * 60 * 60 * 1000;
+                        break;
+                    case 'week':
+                        matchesTimeRange = timeDiff <= 7 * 24 * 60 * 60 * 1000;
+                        break;
+                    case 'month':
+                        matchesTimeRange = timeDiff <= 30 * 24 * 60 * 60 * 1000;
+                        break;
+                    default:
+                        matchesTimeRange = true; // All time
+                }
+
+                // Check if the row text matches the search text
+                var rowText = $(this).text().toLowerCase();
+                var matchesSearch = searchText === "" || rowText.indexOf(searchText) !== -1;
+
+                // Show or hide the row based on both filters
+                $(this).toggle(matchesTimeRange && matchesSearch);
+            });
+    }
+
+    // Bind the applyFilters function to both the dropdown change and search keyup events
+    $('#timeRange2').change(applyFilters);
+    $('#filter2').keyup(applyFilters);
+
+    // Function to update column visibility based on checkboxes
+    function updateColumnVisibility() {
+            $('input.column-toggle2').each(function() {
+                var columnClass = $(this).val();
+                var isChecked = $(this).is(':checked');
+                
+                // Toggle the table cells and headers
+                $('.' + columnClass).each(function() {
+                    if (isChecked) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+    }
+
+    // Initial call to set the visibility based on the checkboxes
+    updateColumnVisibility();
+    $('input.column-toggle2').change(updateColumnVisibility);
+
+    $("#quizTable thead th").each(function (column) {
+        if (!$(this).hasClass("unsortable")) {
+            $(this)
+            .addClass("sortable")
+            .click(function () {
+                var findSortKey = function ($cell) {
+                    return (
+                    $cell.find(".sort-key").text().toUpperCase() +
+                    " " +
+                    $cell.text().toUpperCase()
+                    );
+                };
+                var sortDirection = $(this).is(".sorted-asc") ? -1 : 1;
+                var $rows = $(this)
+                .parent()
+                .parent()
+                .parent()
+                .parent()
+                .find("#quizTable tbody tr")
+                .get();
+                $.each($rows, function (index, row) {
+                    row.sortKey = findSortKey($(row).children("td").eq(column));
+                });
+                $rows.sort(function (a, b) {
+                    if ($.isNumeric(a.sortKey) && $.isNumeric(b.sortKey)) {
+                        if (parseFloat(a.sortKey) < parseFloat(b.sortKey))
+                        return -sortDirection;
+                        if (parseFloat(a.sortKey) > parseFloat(b.sortKey))
+                        return sortDirection;
+                    } else if (a.sortKey.includes("$") && b.sortKey.includes("$")) {
+                        if (
+                        parseFloat(a.sortKey.replace("$", "")) <
+                        parseFloat(b.sortKey.replace("$", ""))
+                        )
+                        return -sortDirection;
+                        if (
+                        parseFloat(a.sortKey.replace("$", "")) >
+                        parseFloat(b.sortKey.replace("$", ""))
+                        )
+                        return sortDirection;
+                    } else {
+                        if (a.sortKey < b.sortKey) return -sortDirection;
+                        if (a.sortKey > b.sortKey) return sortDirection;
+                        return 0;
+                    }
+                });
+                $.each($rows, function (index, row) {
+                    $("#quizTable tbody").append(row);
+                    row.sortKey = null;
+                });
+                $("#quizTable th").removeClass("sorted-asc sorted-desc");
+                var $sortHead = $("#quizTable th").filter(
+                    ":nth-child(" + (column + 1) + ")"
+                );
+                sortDirection == 1
+                ? $sortHead.addClass("sorted-asc")
+                : $sortHead.addClass("sorted-desc");
+                $("#quizTable td")
+                .removeClass("sorted")
+                .filter(":nth-child(" + (column + 1) + ")")
+                .addClass("sorted");
+            });
+        }
+    });
+</script>
+<link rel="stylesheet" href="{{ url_for('static',filename='css/history.css')}}" />
