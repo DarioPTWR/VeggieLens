@@ -1,4 +1,4 @@
-## VEGGIELENS : ONE-STOP VEGGIE PREDICTOR WEBSITE
+## 🥦 VEGGIELENS : ONE-STOP VEGGIE PREDICTOR WEBSITE
 
 ### Project Objective
 To develop a Deep Learning (DL) web application, VeggieLens, using GitLab and Flask Framework, incorporating the 3 DevOps best practices mentioned in the Background section. This is an open-ended assessment. 
