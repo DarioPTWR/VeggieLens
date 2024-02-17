@@ -1,9 +1,4 @@
-## DEVOPS CA2 : CA2-DAAA2B04-2201858-DarioPrawaraTehWeiRong
-
-Name: Dario Prawara Teh Wei Rong<br/><br/>
-Admin Number: P2201858<br/><br/>
-Class: DAAA/FT/2B/04<br/><br/>
-Module Code: ST1505 DevOps and AI Automation<br/>
+## VEGGIELENS : ONE-STOP VEGGIE PREDICTOR WEBSITE
 
 <hr>
 
